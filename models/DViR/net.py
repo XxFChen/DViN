@@ -38,6 +38,27 @@ class Net(nn.Module):
         self.convnext_model.eval()
         self.linear_router = nn.Linear(1024,4)
         self.lambda_sparse = 0.01
+        self.linear_decoder = nn.Sequential(
+        nn.Linear(1024, 1024),
+        nn.ReLU(),
+        nn.Linear(1024, 1024),
+        nn.ReLU(),
+        nn.Linear(1024, 512)  
+        )
+        self.projector_expert = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1,1)),
+            nn.Flatten(),
+            nn.Linear(1024, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, 128)
+        )
+        self.projector_yolo = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1,1)),
+            nn.Flatten(),
+            nn.Linear(1024, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, 128)
+        )
 
         self.class_num = __C.CLASS_NUM
         if __C.VIS_FREEZE:
@@ -121,7 +142,7 @@ class Net(nn.Module):
         x_input = [l, m, s]
         l_new, m_new, s_new = self.multi_scale_manner(x_input)
         
-
+        s_new_original = s_new.clone()
         
         dynamic_features = [clip_feature, dino_feature, sam_feature, convnext_feature]
         
@@ -156,7 +177,19 @@ class Net(nn.Module):
         s_new = s_new * selected_logits0[:, None, None, None] + \
                 selected_feature1 * selected_logits1[:, None, None, None]            
 
+        z_expert = self.projector_expert(selected_feature1)
+        z_yolo = self.projector_yolo(s_new_original)
 
+        temperature = 0.5
+        batch_size = z_expert.size(0)
+        z_expert_norm = F.normalize(z_expert, dim=1)
+        z_yolo_norm = F.normalize(z_yolo, dim=1)
+        similarity_matrix = torch.matmul(z_expert_norm, z_yolo_norm.T)
+        positive_sample = torch.diag(similarity_matrix)
+        labels = torch.arange(batch_size).to(x.device)
+        criterion = nn.CrossEntropyLoss()
+        logits = similarity_matrix / temperature
+        loss_contrastive = criterion(logits, labels)
         x_ = [s_new, m_new, l_new]
 
         # Anchor Selection
@@ -177,13 +210,19 @@ class Net(nn.Module):
         i_new = i_new.masked_select(
             torch.zeros(bs, gridnum).to(i_new.device).scatter(1, indices, 1).
                 bool().unsqueeze(2).expand(bs, gridnum,ch)).contiguous().view(bs, selnum, ch)
-
+        
+        recon_text_feature = self.linear_decoder(i_new)
+        #pooling
+        recon_text_feature_pooled = recon_text_feature.mean(dim=1,keepdim=True)
+        recon_loss = F.mse_loss(recon_text_feature_pooled, y_['flat_lang_feat'].unsqueeze(1))
+        
         # Anchor-based Contrastive Learning
         x_new = self.linear_vs(i_new)
         y_new = self.linear_ts(y_['flat_lang_feat'].unsqueeze(1))
         if self.training:
             loss = self.head(x_new, y_new)
-            return loss
+            total_loss = loss + recon_loss + self.lambda_sparse * sparse_loss + loss_contrastive
+            return total_loss
         else:
             predictions_s = self.head(x_new, y_new)
             predictions_list = [predictions_s]

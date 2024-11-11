@@ -47,13 +47,13 @@ def validate(__C,
     with th.no_grad():
         end = time.time()
         for ith_batch, data in enumerate(loader):
-            ref_iter, image_iter, box_iter,gt_box_iter,info_iter = data
+            
+            ref_iter, image_iter, box_iter,gt_box_iter,info_iter,img_path = data
             ref_iter = ref_iter.cuda( non_blocking=True)
             image_iter = image_iter.cuda( non_blocking=True)
             box_iter = box_iter.cuda( non_blocking=True)
+
             box= net(image_iter, ref_iter)
-
-
             gt_box_iter=gt_box_iter.squeeze(1)
             gt_box_iter[:, 2] = (gt_box_iter[:, 0] + gt_box_iter[:, 2])
             gt_box_iter[:, 3] = (gt_box_iter[:, 1] + gt_box_iter[:, 3])
@@ -78,6 +78,8 @@ def validate(__C,
             writer.add_scalar("Acc/BoxIoU@0.5", box_ap.avg_reduce, global_step=epoch)
     if ema is not None:
         ema.restore()
+    
+            
     return box_ap.avg_reduce
 
 
