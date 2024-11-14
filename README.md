@@ -3,7 +3,7 @@
 ![PyTorch](https://img.shields.io/badge/pytorch-%237732a8)
 
 
-This repo is the official implementation of the paper "DViR: Dynamic Visual Routing for Weakly Supervised Referring Expression Comprehension"
+This repo is the official implementation of the paper "DViN: Dynamic Visual Routing Network for Weakly Supervised Referring Expression Comprehension"
 ![DViN](assets/fig2.jpg)
 
 ## Project structure
