@@ -1,10 +1,10 @@
-# DViR
+# DViN
 [![Python](https://img.shields.io/badge/python-blue.svg)](https://www.python.org/)
 ![PyTorch](https://img.shields.io/badge/pytorch-%237732a8)
 
 
 This repo is the official implementation of the paper "DViR: Dynamic Visual Routing for Weakly Supervised Referring Expression Comprehension"
-![DViR](assets/fig2.jpg)
+![DViN](assets/fig2.jpg)
 
 ## Project structure
 
@@ -30,10 +30,10 @@ The directory structure of the project looks like this:
 │   ├── visual_encoder.py               <- visual backbone ,also includes prompt template encoder
 │   │
 │   │
-│   ├── DViR           <- most important files for DViR model implementations
+│   ├── DViN           <- most important files for DViN model implementations
 │   │   ├── __init__.py
 │   │   ├── head.py   <- for anchor-prompt contrastive loss
-|   |   ├── net.py    <- main code for DViR model
+|   |   ├── net.py    <- main code for DViN model
 │   │
 │   │
 ├── utils  <- hepler functions
@@ -52,14 +52,14 @@ Instructions on how to clone and set up your repository:
 - Clone the repository and navigate to the project directory:
 
 ```bash
-git clone https://github.com/XxFChen/DViR.git
-cd DViR
+git clone https://github.com/XxFChen/DViN.git
+cd DViN
 ```
 
 ### Create a conda virtual environment and activate it:
 ```bash
-conda create -n DViR python=3.9 -y
-conda activate DViR
+conda create -n DViN python=3.9 -y
+conda activate DViN
 ```
 ### Install the required dependencies:
 - Install Pytorch following the [offical installation instructions](https://pytorch.org/get-started/locally/) 
@@ -95,7 +95,7 @@ pip install en_vectors_web_lg-2.1.0.tar.gz
 
 - Download the pretrained weights of YoloV3 from [Google Drive](https://drive.google.com/file/d/1nxVTx8Zv52VSO-ccHVFe2ggG0HbGnw9g/view?usp=sharing) 
 
-(We recommend to put it in the main path of DViR otherwise, please modify the path in config files)
+(We recommend to put it in the main path of DViN otherwise, please modify the path in config files)
 
 - The data directory should look like this:
 
@@ -136,21 +136,21 @@ python test.py --config ./config/[DATASET_NAME].yaml --eval-weights [PATH_TO_CHE
 | Method | RefCOCO | | | RefCOCO+ | | | RefCOCOg |
 | ------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- |
 |        | val     | testA   | testB   | val     | testA   | testB   | val-g   |
-| DViR    | 66.46   | 69.11  | 59.01   | 52.14   | 56.96   | 43.85   | 53.59   |
+| DViN    | 67.67   | 70.90  | 59.39   | 52.54   | 57.52   | 45.31   | 55.04   |
 
 ### Weakly RES
 | Method | RefCOCO | | | RefCOCO+ | | | RefCOCOg |
 | ------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- |
 |        | val     | testA   | testB   | val     | testA   | testB   | val-g   |
-| DViR    | 61.43   | 63.81   | 56.97   | 46.79   | 51.87   | 39.85  | 46.49   |
+| DViN    | 61.43   | 63.81   | 56.97   | 46.79   | 51.87   | 39.85  | 46.49   |
 
 ### Pesudo Labels to training other models ( Weakly Supervsied Training Schema)
 
 | Method            | RefCOCO |        |        | RefCOCO+ |        |        | RefCOCOg |
 | ----------------- | ------- | ------ | ------ | -------- | ------ | ------ | -------- |
 |                   | val     | testA  | testB  | val      | testA  | testB  | val-g    |
-| DViR_SimREC    | 67.29   | 73.09  | 60.65  | 51.54    | 59.06  | 39.59  | 51.73    |
-| DViR_TransVG   | 64.99   | 68.87  | 64.48  | 50.72 |57.36| 38.64  | 50.47     |
+| DViN_SimREC    | 67.29   | 73.09  | 60.65  | 51.54    | 59.06  | 39.59  | 51.73    |
+| DViN_TransVG   | 64.99   | 68.87  | 64.48  | 50.72 |57.36| 38.64  | 50.47     |
 
 
 ## Visualization Prediction Results (Blue box is ground truth)
